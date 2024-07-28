@@ -1,0 +1,26 @@
+metadata:
+    language: v2-beta
+    name: "JS Source map detected"
+    description: "This rule checks for the presence of indicators suggesting the availability of a JavaScript map file."
+    author: "TheButcher"
+    tags: "passive", "javascript", "informative"
+
+given response then
+    if {latest.response.headers} matches "application/javascript" or
+        {latest.response.headers} matches "text/javascript" then
+        if {latest.response.body} matches "sourceMappingURL=" then
+            report issue and continue:
+                severity: info
+                confidence: firm
+                detail: "Client-side JavaScript source code can be combined, minified, or compiled. A source map is a file that maps from the transformed source code back to the original source code. However, exposing a source map in a production environment may potentially aid attackers in reading and debugging JavaScript code."
+                remediation: "According to the best practices, source maps should not be accessible in a Production Environment."
+        end if
+
+        if {latest.response.body} matches "\b(blt\w*|cs\w*|password|key|secret|AWS|aws|azure|AZURE|tfa|2fa|mobile|credit\s*card|token|auth|bearer|apikey|api_key|access_token|refresh_token|sessionid|session_id)\b" then
+            report issue and continue:
+                severity: high
+                confidence: certain
+                detail: "Sensitive information such as API keys, passwords, or secrets have been detected in the JavaScript file. This can expose critical data to attackers and should be removed."
+                remediation: "Ensure that sensitive data are stored securely and not included in client-side scripts."
+        end if
+    end if

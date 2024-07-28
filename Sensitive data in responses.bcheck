@@ -1,0 +1,14 @@
+metadata:
+    language: v2-beta
+    name: "Sensitive data in responses"
+    description: "Checks for sensitive data in all responses"
+    author: "Kaustubh"
+
+given response then
+    if {latest.response.body} matches "\b(blt\w*|cs\w*|password|key|secret|AWS|aws|azure|AZURE|tfa|2fa|mobile|credit\s*card|token|auth|bearer|apikey|api_key|access_token|refresh_token|sessionid|session_id)\b" then
+        report issue and continue:
+            severity: medium
+            confidence: tentative
+            detail: "Sensitive keyword found in a response body: '{matched[0]}'."
+            remediation: "Review and remove the sensitive data."
+    end if
